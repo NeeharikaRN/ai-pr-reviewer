@@ -18,11 +18,11 @@ jsonpatch
 jsonpointer
 langchain-core==0.2.43  # Update to a valid version
 langchain==0.2.17  # Ensure it's compatible with langchain-core
-langgraph
-langgraph-checkpoint
-langgraph-prebuilt
-langgraph-sdk
-langsmith
+langgraph==1.0.3
+langgraph-checkpoint==3.0.1
+langgraph-prebuilt==1.0.4
+langgraph-sdk==0.2.9
+langsmith==0.4.43
 mccabe
 orjson
 ormsgpack
@@ -49,5 +49,6 @@ typing_extensions
 urllib3
 xxhash
 zstandard
+
 
 
