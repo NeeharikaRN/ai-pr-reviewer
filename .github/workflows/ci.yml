@@ -55,6 +55,6 @@ jobs:
       # Step 7: Run AI Agent to review PR
       - name: Run AI Agent to Review PR
         run: |
-          python pr_review_agent.py
+          python .github/workflows/pr_review_agent.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub token for API access
