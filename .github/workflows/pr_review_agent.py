@@ -1,5 +1,5 @@
 import os
-from github import Github
+from github import Github, Auth
 
 # Set up GitHub authentication
 token = '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'  # Personal Access Token for GitHub API access
