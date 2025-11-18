@@ -8,8 +8,6 @@ g = Github(auth=Auth.Token(token))
 # GitHub repository and PR details
 repo_name = "preethamkondapaka/ai-pr-reviewer"
 pr_number = 1  # Replace with dynamic PR number from event
-pr = repo.get_pull(pr_number)
-pr.create_review(body="PR is still under review", event="COMMENT")
 
 # Function to check CI/CD status
 def check_pr_status(repo_name, pr_number):
