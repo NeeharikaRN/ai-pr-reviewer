@@ -3,9 +3,15 @@ import json
 from github import Github, Auth
 
 
-# -----------------------------
-# GitHub Authentication
-# -----------------------------
+# -------------------------------------------------
+# Configuration
+# -------------------------------------------------
+AGENT_CHECK_NAME = "AI PR Review Agent"  # Must match job name in ci.yml
+
+
+# -------------------------------------------------
+# Authenticate with GitHub
+# -------------------------------------------------
 token = os.getenv("GITHUB_TOKEN")
 if not token:
     raise RuntimeError("GITHUB_TOKEN is not set")
@@ -13,9 +19,9 @@ if not token:
 g = Github(auth=Auth.Token(token))
 
 
-# -----------------------------
-# Read PR context dynamically
-# -----------------------------
+# -------------------------------------------------
+# Read PR context dynamically from GitHub Actions
+# -------------------------------------------------
 event_path = os.getenv("GITHUB_EVENT_PATH")
 if not event_path:
     raise RuntimeError("GITHUB_EVENT_PATH is not set")
@@ -23,17 +29,16 @@ if not event_path:
 with open(event_path, "r") as f:
     event = json.load(f)
 
-# Ensure this script runs only for PR events
 if "pull_request" not in event:
-    raise RuntimeError("This workflow was not triggered by a pull request")
+    raise RuntimeError("Workflow was not triggered by a pull request")
 
 repo_name = event["repository"]["full_name"]
 pr_number = event["pull_request"]["number"]
 
 
-# -----------------------------
-# Check CI/CD status using Checks API
-# -----------------------------
+# -------------------------------------------------
+# Evaluate CI checks using GitHub Checks API
+# -------------------------------------------------
 def check_pr_status(repo_name, pr_number):
     repo = g.get_repo(repo_name)
     pr = repo.get_pull(pr_number)
@@ -55,21 +60,25 @@ def check_pr_status(repo_name, pr_number):
             f"Conclusion: {check.conclusion}"
         )
 
-        # If any check is still running or queued
+        # 🚫 Ignore this agent's own job
+        if check.name == AGENT_CHECK_NAME:
+            continue
+
+        # ⏳ CI still running
         if check.status != "completed":
             return "waiting"
 
-        # If any check failed
+        # ❌ Any failure blocks PR
         if check.conclusion in ["failure", "cancelled", "timed_out"]:
             return "blocked"
 
-    # If all checks completed successfully
+    # ✅ All relevant checks completed successfully
     return "approved"
 
 
-# -----------------------------
-# Review PR based on agent decision
-# -----------------------------
+# -------------------------------------------------
+# Act on PR based on agent decision
+# -------------------------------------------------
 def review_pr(repo_name, pr_number, decision):
     repo = g.get_repo(repo_name)
     pr = repo.get_pull(pr_number)
@@ -96,18 +105,20 @@ def review_pr(repo_name, pr_number, decision):
         print("PR is still under review.")
 
 
-# -----------------------------
-# Agent execution flow
-# -----------------------------
+# -------------------------------------------------
+# Agent execution loop
+# -------------------------------------------------
 def trigger_agent_review():
-    print(f"Starting AI-powered PR review for {repo_name} (PR #{pr_number})...\n")
+    print(
+        f"Starting AI-powered PR review for {repo_name} (PR #{pr_number})...\n"
+    )
 
     pr_status = check_pr_status(repo_name, pr_number)
     review_pr(repo_name, pr_number, pr_status)
 
 
-# -----------------------------
+# -------------------------------------------------
 # Entry point
-# -----------------------------
+# -------------------------------------------------
 if __name__ == "__main__":
     trigger_agent_review()
