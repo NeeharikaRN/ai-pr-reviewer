@@ -1,2 +1,2 @@
-# ai-pr-reviewer
+# ai-pr-reviewer agent
 testing from new branch
